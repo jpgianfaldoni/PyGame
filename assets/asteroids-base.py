@@ -85,10 +85,25 @@ class Mob(pygame.sprite.Sprite):
             VY = random.randrange(2,9)
             self.speedx = VX
             self.speedy = VY
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
-        if self.rect.left  < 0:
-            self.rect.left = 0
+            
+class Bullet(pygame.sprite.Sprite):
+     
+    #Construtor da Classe
+    def __init__(self):
+         
+        pygame.sprite.Sprite.__init__(self)
+        bullet_img = pygame.image.load(path.join(img_dir, "laserRed16.png")).convert()
+        self.image = bullet_img
+        self.image = pygame.transform.scale(bullet_img, (10, 20))
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+
+        
+    def update(self):
+            
+        self.rect.y -= 10
+        
+        
         
     
 
@@ -112,10 +127,9 @@ background = pygame.image.load(path.join(img_dir, 'starfield.png')).convert()
 background_rect = background.get_rect()
 
 # Carrega os sons do jogo
-pygame.mixer.music.load(path.join(snd_dir, "tgfcoder-FrozenJam-SeamlessLoop.ogg"))
+pygame.mixer.music.load(path.join(snd_dir, "carryon.ogg"))
 pygame.mixer.music.set_volume(0.4)
 boom_sound = pygame.mixer.Sound(path.join(snd_dir, "expl3.wav"))
-
 
 player = Player()
 mob = Mob()
@@ -145,6 +159,9 @@ all_sprites.add(mob4)
 all_sprites.add(mob5)
 all_sprites.add(mob6)
 all_sprites.add(mob7)
+bullets = pygame.sprite.Group()
+
+
 
 # Comando para evitar travamentos.
 try:
@@ -172,6 +189,12 @@ try:
                     player.speedx = -8
                 if event.key == pygame.K_RIGHT:
                     player.speedx = 8
+                if event.key == pygame.K_UP:
+                    bullet = Bullet()
+                    bullet.rect.x = player.rect.x + 20
+                    bullet.rect.y = player.rect.y
+                    all_sprites.add(bullet)
+                    bullets.add(bullet)                    
                     
             #Verifica se soltou alguma tecla
             if event.type == pygame.KEYUP:
@@ -194,7 +217,14 @@ try:
             boom_sound.play()
             time.sleep(1)
             running = False
-                    
+            
+        hits2 = pygame.sprite.groupcollide(bullets, mobs, True, True)
+
+        for hit in hits2:
+            mob = Mob()
+            mobs.add(mob)
+            all_sprites.add(mob)
+             
         # A cada loop, redesenha o fundo e os sprites
         screen.fill(BLACK)
         screen.blit(background, background_rect)
